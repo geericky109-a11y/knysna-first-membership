@@ -27,6 +27,21 @@ const SUPABASE_URL = 'https://zfjgfusdfbqgsugkoxlb.supabase.co/rest/v1/';
 const SUPABASE_PUBLIC_KEY = 'sb_publishable_AdqfWcuYSG74GGDQ8g9mCg_SZxHCia0';
 
 let db = null, records = [];
+window.testSupabaseConnection = async () => {
+  if (!db) {
+    console.log("Supabase client not configured");
+    return;
+  }
+
+  const { error } = await db
+    .from('membership_applications')
+    .select('id', { count: 'exact', head: true });
+
+  console.log(
+    error ? "Connection test failed:" + error.message
+          : "Connection test passed"
+  );
+};    
 const $ = x => document.getElementById(x);
 function msg(id,t,c=''){ $(id).className='notice '+c;$(id).textContent=t; }
 $('connect').onclick=()=>{try{const u=$('url').value.trim(),k=$('key').value.trim();if(!u||!k||!window.supabase)throw Error('Enter project URL and public key; check internet connection.');localStorage.setItem('kf_url',u);localStorage.setItem('kf_key',k);db=window.supabase.createClient(u,k);msg('configMsg','Database client configured. Apply SQL policies and test before launch.','success');}catch(e){msg('configMsg',e.message,'error')}};
