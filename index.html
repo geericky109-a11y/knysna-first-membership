@@ -19,70 +19,51 @@ body{font:16px Arial;margin:0;background:#f3f5f9;color:#172033}header{background
 <div><label>Under 18</label><select name="under_18"><option></option><option>Yes</option><option>No</option></select></div><div><label>Membership fee (R)</label><input name="membership_fee" type="number" min="0" step=".01"></div>
 <div><label>Acceptance date</label><input name="acceptance_date" type="date"></div><div><label>Signed date *</label><input name="signed_date" type="date" required></div>
 <div style="grid-column:1/-1"><label>Declaration</label><p class="muted">I solemnly affirm that I will abide by the Constitution of the Knysna First Organization and commit to live by its Rules and Regulations. Accordingly, I dedicate myself, as a member of Knysna First, for the good of the people.</p><label><input style="width:auto" type="checkbox" name="declaration_accepted" required> I accept the declaration *</label></div>
-<div><label>Electronic signature — full name *</label><input name="electronic_signature" required></div></div><button type="submit" id="submit">Submit application</button></form><div id="applyMsg" class="notice">Connect the database before submitting.</div><button type="button" id="testConnection">
-  Test Database Connection
-</button>
-<div id="connectionResult" class="notice">
-  Connection not tested yet.</div></section>
+<div><label>Electronic signature — full name *</label><input name="electronic_signature" required></div></div><button type="submit" id="submit">Submit application</button></form><div id="applyMsg" class="notice">Connect the database before submitting.</div><button type="button" id="testConnection">Test Database Connection</button>
+<div id="connectionResult" class="notice">Connection not tested yet.</div></section>
 <section class="card hidden" id="admin"><h2>Administrator sign-in</h2><div id="login"><div class="grid"><div><label>Admin email</label><input id="adminEmail" type="email"></div><div><label>Password</label><input id="adminPassword" type="password"></div></div><button id="signIn">Sign in</button></div><div id="dash" class="hidden"><p id="who" class="muted"></p><button class="secondary" id="refresh">Refresh</button><button class="secondary" id="csv">Export register CSV</button><button class="secondary" id="signOut">Sign out</button><div class="stats"><div class="stat">Total<b id="total">0</b></div><div class="stat">Pending<b id="pending">0</b></div><div class="stat">Approved<b id="approved">0</b></div></div><div class="scroll"><table><thead><tr><th>Name</th><th>Email</th><th>Ward</th><th>Status</th><th>Membership no.</th><th>Action</th></tr></thead><tbody id="rows"></tbody></table></div><div id="details" class="notice hidden"></div></div><div id="adminMsg" class="notice">Sign in with an authorised admin account.</div></section>
 <p class="muted">Protect applicants' personal information. Do not launch until database policies, administrator access and privacy notice have been tested. The dashboard does not display ID numbers.</p></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
-const SUPABASE_URL = 'https://zfjgfusdfbqgsugkoxlb.supabase.co/rest/v1/';
+const $ = x => document.getElementById(x);
+
+const SUPABASE_URL = 'https://zfjgfusdfbqgsugkoxlb.supabase.co';
 const SUPABASE_PUBLIC_KEY = 'sb_publishable_AdqfWcuYSG74GGDQ8g9mCg_SZxHCia0';
 
 let db = null, records = [];
-window.testSupabaseConnection = async () => {
-  if (!db) {
-    console.log("Supabase client not configured");
-    return;
-  }
 
-  const { error } = await db
-    .from('membership_applications')
-    .select('id', { count: 'exact', head: true });
+function msg(id,t,c=''){ $(id).className='notice '+c;$(id).textContent=t; }
 
-  console.log(
-    error ? "Connection test failed:" + error.message
-          : "Connection test passed"
-  );
-}; $('testConnection').onclick = async () => {
-  $('connectionResult').textContent = 'Testing...';
+$('testConnection').onclick = async () => {
+  msg('connectionResult', 'Testing...');
   try {
     if (!db) {
-      $('connectionResult').textContent =
-        'Supabase client is not configured.';
+      msg('connectionResult', 'Supabase client is not configured.', 'error');
       return;
     }
-
     const { error } = await db
       .from('membership_applications')
       .select('id', { head: true, count: 'exact' });
 
-    $('connectionResult').textContent = error
-      ? 'Test failed: ' + error.message
-      : 'Connection test passed!';
+    if (error) msg('connectionResult', 'Test failed: ' + error.message, 'error');
+    else msg('connectionResult', 'Connection test passed!', 'success');
   } catch (e) {
-    $('connectionResult').textContent =
-      'Test failed: ' + e.message;
+    msg('connectionResult', 'Test failed: ' + e.message, 'error');
   }
-};   
-const $ = x => document.getElementById(x);
-function msg(id,t,c=''){ $(id).className='notice '+c;$(id).textContent=t; }
+};
+
 $('connect').onclick=()=>{try{const u=$('url').value.trim(),k=$('key').value.trim();if(!u||!k||!window.supabase)throw Error('Enter project URL and public key; check internet connection.');localStorage.setItem('kf_url',u);localStorage.setItem('kf_key',k);db=window.supabase.createClient(u,k);msg('configMsg','Database client configured. Apply SQL policies and test before launch.','success');}catch(e){msg('configMsg',e.message,'error')}};
 $('clear').onclick=()=>{localStorage.removeItem('kf_url');localStorage.removeItem('kf_key');$('url').value='';$('key').value='';db=null;msg('configMsg','Settings cleared.')};
 $('url').value = SUPABASE_URL;
 $('key').value = SUPABASE_PUBLIC_KEY;
 
-if (window.supabase && SUPABASE_URL.startsWith('https://')
-    && SUPABASE_PUBLIC_KEY) {
-  db = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLIC_KEY
-  );
+if (window.supabase && SUPABASE_URL.startsWith('https://') && SUPABASE_PUBLIC_KEY) {
+  db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY);
   msg('configMsg', 'Membership portal connected.', 'success');
+  msg('applyMsg', 'Ready to submit.', '');
 } else {
   msg('configMsg', 'Database configuration needs checking.', 'error');
 }
+
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('secondary',x!==b));$('application').classList.toggle('hidden',b.dataset.tab!=='application');$('admin').classList.toggle('hidden',b.dataset.tab!=='admin')});
 $('form').onsubmit=async e=>{e.preventDefault();if(!db){msg('applyMsg','Connect the database first.','error');return}const d={};new FormData(e.target).forEach((v,k)=>{if(k!=='declaration_accepted')d[k]=v});d.declaration_accepted=e.target.declaration_accepted.checked;d.status='Pending';$('submit').disabled=true;const {error}=await db.from('membership_applications').insert(d);$('submit').disabled=false;if(error)msg('applyMsg','Could not submit: '+error.message,'error');else{e.target.reset();msg('applyMsg','Application submitted successfully. Thank you.','success')}};
 $('signIn').onclick=async()=>{if(!db){msg('adminMsg','Connect database first.','error');return}const {data,error}=await db.auth.signInWithPassword({email:$('adminEmail').value,password:$('adminPassword').value});if(error){msg('adminMsg',error.message,'error');return}$('login').classList.add('hidden');$('dash').classList.remove('hidden');$('who').textContent='Signed in: '+data.user.email;await load()};
