@@ -23,8 +23,8 @@ body{font:16px Arial;margin:0;background:#f3f5f9;color:#172033}header{background
 <section class="card hidden" id="admin"><h2>Administrator sign-in</h2><div id="login"><div class="grid"><div><label>Admin email</label><input id="adminEmail" type="email"></div><div><label>Password</label><input id="adminPassword" type="password"></div></div><button id="signIn">Sign in</button></div><div id="dash" class="hidden"><p id="who" class="muted"></p><button class="secondary" id="refresh">Refresh</button><button class="secondary" id="csv">Export register CSV</button><button class="secondary" id="signOut">Sign out</button><div class="stats"><div class="stat">Total<b id="total">0</b></div><div class="stat">Pending<b id="pending">0</b></div><div class="stat">Approved<b id="approved">0</b></div></div><div class="scroll"><table><thead><tr><th>Name</th><th>Email</th><th>Ward</th><th>Status</th><th>Membership no.</th><th>Action</th></tr></thead><tbody id="rows"></tbody></table></div><div id="details" class="notice hidden"></div></div><div id="adminMsg" class="notice">Sign in with an authorised admin account.</div></section>
 <p class="muted">Protect applicants' personal information. Do not launch until database policies, administrator access and privacy notice have been tested. The dashboard does not display ID numbers.</p></main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
-const SUPABASE_URL = 'PASTE_YOUR_PROJECT_URL_HERE';
-const SUPABASE_PUBLIC_KEY = 'PASTE_YOUR_PUBLISHABLE_KEY_HERE';
+const SUPABASE_URL = 'https://zfjgfusdfbqgsugkoxlb.supabase.co/rest/v1/';
+const SUPABASE_PUBLIC_KEY = 'sb_publishable_AdqfWcuYSG74GGDQ8g9mCg_SZxHCia0';
 
 let db = null, records = [];
 const $ = x => document.getElementById(x);
